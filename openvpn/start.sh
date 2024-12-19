@@ -144,9 +144,13 @@ for name_server_item in "${name_server_list[@]}"; do
 	# strip whitespace from start and end of lan_network_item
 	name_server_item=$(echo "${name_server_item}" | sed -e 's~^[ \t]*~~;s~[ \t]*$~~')
 
-	echo "[info] Adding ${name_server_item} to resolv.conf" | ts '%Y-%m-%d %H:%M:%.S'
-	echo "nameserver ${name_server_item}" >> /etc/resolv.conf
-
+ 	# check if name server is already defined
+ 	existing_name_servers=$(awk "/^nameserver ${name_server_item}$/" /etc/resolv.conf | wc -l)
+  
+  	if [ "$existing_name_servers" -eq 0 ]; then
+		echo "[info] Adding ${name_server_item} to resolv.conf" | ts '%Y-%m-%d %H:%M:%.S'
+		echo "nameserver ${name_server_item}" >> /etc/resolv.conf
+	fi
 done
 
 if [[ -z "${PUID}" ]]; then
